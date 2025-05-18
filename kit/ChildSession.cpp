@@ -1207,12 +1207,15 @@ bool ChildSession::getCommandValues(const StringVector& tokens)
     if (command == ".uno:DocumentRepair")
     {
         char* undo;
-        const std::string jsonTemplate("{\"commandName\":\".uno:DocumentRepair\",\"Redo\":%s,\"Undo\":%s}");
+        //const std::string jsonTemplate("{\"commandName\":\".uno:DocumentRepair\",\"Redo\":%s,\"Undo\":%s}");
         values = getLOKitDocument()->getCommandValues(".uno:Redo");
         undo = getLOKitDocument()->getCommandValues(".uno:Undo");
-        std::string json = Poco::format(jsonTemplate,
-                                        std::string(values == nullptr ? "" : values),
-                                        std::string(undo == nullptr ? "" : undo));
+        // jsonTemplate
+        std::ostringstream oss;
+        oss << "{\"commandName\":\".uno:DocumentRepair\",\"Redo\":"
+            << (values == nullptr ? "" : values) << ",\"Undo\":" << (undo == nullptr ? "" : undo)
+            << "}";
+        std::string json = oss.str();
         // json only contains view IDs, insert matching user names.
         std::map<int, UserInfo> viewInfo = _docManager->getViewInfo();
         insertUserNames(viewInfo, json);

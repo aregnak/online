@@ -396,12 +396,13 @@ void COOLWSD::checkSessionLimitsAndWarnClients()
     if (COOLWSD::MaxDocuments < 10000 &&
         (docBrokerCount > static_cast<ssize_t>(COOLWSD::MaxDocuments) || COOLWSD::NumConnections >= COOLWSD::MaxConnections))
     {
-        const std::string info = Poco::format(PAYLOAD_INFO_LIMIT_REACHED, COOLWSD::MaxDocuments, COOLWSD::MaxConnections);
-        LOG_INF("Sending client 'limitreached' message: " << info);
+        std::ostringstream oss;
+        oss << PAYLOAD_INFO_LIMIT_REACHED << COOLWSD::MaxDocuments << COOLWSD::MaxConnections;
+        LOG_INF("Sending client 'limitreached' message: " << oss.str());
 
         try
         {
-            Util::alertAllUsers(info);
+            Util::alertAllUsers(oss.str());
         }
         catch (const std::exception& ex)
         {

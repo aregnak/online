@@ -86,17 +86,17 @@ inline void shutdownLimitReached(const std::shared_ptr<ProtocolHandlerInterface>
     if (!proto)
         return;
 
-    const std::string error = Poco::format(PAYLOAD_UNAVAILABLE_LIMIT_REACHED, COOLWSD::MaxDocuments,
-                                           COOLWSD::MaxConnections);
-    LOG_INF("Sending client 'hardlimitreached' message: " << error);
+    std::ostringstream oss;
+    oss << PAYLOAD_UNAVAILABLE_LIMIT_REACHED << COOLWSD::MaxDocuments << COOLWSD::MaxConnections;
+    LOG_INF("Sending client 'hardlimitreached' message: " << oss.str());
 
     try
     {
         // Let the client know we are shutting down.
-        proto->sendTextMessage(error);
+        proto->sendTextMessage(oss.str());
 
         // Shutdown.
-        proto->shutdown(true, error);
+        proto->shutdown(true, oss.str());
     }
     catch (const std::exception& ex)
     {
@@ -180,9 +180,10 @@ findOrCreateDocBroker(DocumentBroker::ChildType type, const std::string& uri,
                     << "] for docKey [" << docKey << ']');
             if constexpr (ConfigUtil::isSupportKeyEnabled())
             {
-                const std::string error = Poco::format(PAYLOAD_UNAVAILABLE_LIMIT_REACHED,
-                                                       COOLWSD::MaxDocuments, COOLWSD::MaxConnections);
-                return std::make_pair(nullptr, error);
+                std::ostringstream oss;
+                oss << PAYLOAD_UNAVAILABLE_LIMIT_REACHED << COOLWSD::MaxDocuments
+                    << COOLWSD::MaxConnections;
+                return std::make_pair(nullptr, oss.str());
             }
         }
 
