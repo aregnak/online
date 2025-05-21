@@ -27,6 +27,8 @@ namespace
 void testEachView(const std::string& doc, const std::string& type, const std::string& protocol,
                   const std::string& protocolView, const std::string& testname)
 {
+    const std::string view1 = testname + "view %d -> ";
+    const std::string error1 = testname + "view %d, did not receive a %s message as expected";
     TST_LOG("testEachView for " << testname);
 
     std::shared_ptr<SocketPoll> socketPoll = std::make_shared<SocketPoll>("UnitEachView");
@@ -45,6 +47,8 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
         ossView << testname << "view " << itView << " -> ";
         const std::string view = ossView.str();
 
+        assert(view == Poco::format(view1, itView));
+
         std::shared_ptr<http::WebSocketSession> socket = helpers::loadDocAndGetSession(
             socketPoll, Poco::URI(helpers::getTestServerURI()), documentURL, view);
 
@@ -60,14 +64,24 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
                               docViewId, testname);
 
         // Send click message
+        std::string text;
         std::ostringstream ossButtondown;
         ossButtondown << "mouse type=buttondown x=" << docWidth / 2 << " y=" << docHeight / 6
                       << " count=1 buttons=1 modifier=0";
+        Poco::format(text, "mouse type=%s x=%d y=%d count=1 buttons=1 modifier=0",
+                     std::string("buttondown"), docWidth / 2, docHeight / 6);
+        assert(ossButtondown.str() == text);
+
         helpers::sendTextFrame(socket, ossButtondown.str(), view);
+
+        text.clear();
 
         std::ostringstream ossButtonup;
         ossButtonup << "mouse type=buttonup x=" << docWidth / 2 << " y=" << docHeight / 6
                     << " count=1 buttons=1 modifier=0";
+        Poco::format(text, "mouse type=%s x=%d y=%d count=1 buttons=1 modifier=0",
+                     std::string("buttonup"), docWidth / 2, docHeight / 6);
+        assert(ossButtonup.str() == text);
         helpers::sendTextFrame(socket, ossButtonup.str(), view);
         // Double of the default.
         constexpr std::chrono::milliseconds timeoutMs{ 20000 };
@@ -76,6 +90,7 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
         std::ostringstream ossError;
         ossError << testname << "view " << itView << ", did not receive a " << protocol
                  << " message as expected";
+        assert(ossError.str() == Poco::format(error1, itView, protocol));
         LOK_ASSERT_MESSAGE(ossError.str(), !response.empty());
 
         // Connect and load 0..N Views, where N<=limit
@@ -87,6 +102,7 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
             TST_LOG("loadDocAndGetSession #" << (itView + 1) << ": " << documentURL);
             std::ostringstream oss;
             oss << testname << "view " << itView << " -> ";
+            assert(oss.str() == Poco::format(view1, itView));
             views.emplace_back(helpers::loadDocAndGetSession(
                 socketPoll, Poco::URI(helpers::getTestServerURI()), documentURL, oss.str()));
         }
@@ -103,11 +119,13 @@ void testEachView(const std::string& doc, const std::string& type, const std::st
             TST_LOG("getResponse #" << (itView + 1) << ": " << protocolView);
             std::ostringstream oss;
             oss << testname << "view " << itView << " -> ";
+            assert(oss.str() == Poco::format(view1, itView));
             response = helpers::getResponseString(socket, protocolView, oss.str(), timeoutMs);
 
             std::ostringstream ossSocketViewError;
             ossSocketViewError << testname << "view " << itView << ", did not receive a "
                                << protocol << " message as expected";
+            assert(ossSocketViewError.str() == Poco::format(error1, itView, protocolView));
             LOK_ASSERT_MESSAGE(ossSocketViewError.str(), !response.empty());
             ++itView;
             (void)socketView;

@@ -399,7 +399,10 @@ void COOLWSD::checkSessionLimitsAndWarnClients()
         std::ostringstream oss;
         oss << "info: cmd=socket kind=limitreached params=" << COOLWSD::MaxDocuments << ","
             << COOLWSD::MaxConnections;
+        const std::string info1 = Poco::format(PAYLOAD_INFO_LIMIT_REACHED, COOLWSD::MaxDocuments,
+                                               COOLWSD::MaxConnections);
         const std::string info = oss.str();
+        assert(info == info1);
         LOG_INF("Sending client 'limitreached' message: " << info);
 
         try

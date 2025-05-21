@@ -91,6 +91,13 @@ void limitCursor(
     text << "commandvalues "
          << "command=.uno:CellCursor?outputHeight=" << 256 << "&outputWidth=" << 256
          << "&tileHeight=" << 3840 << "&tileWidth=" << 3840;
+    std::string temp;
+    Poco::format(temp,
+                 "commandvalues "
+                 "command=.uno:CellCursor?outputHeight=%d&outputWidth=%d&tileHeight=%d&tileWidth=%"
+                 "d",
+                 256, 256, 3840, 3840);
+    assert(text.str() == temp);
     helpers::sendTextFrame(socket, text.str(), testname);
     const auto cursor = helpers::getResponseString(socket, "commandvalues:", testname);
     getCursor(cursor.substr(14), cursorX, cursorY, cursorWidth, cursorHeight, testname);

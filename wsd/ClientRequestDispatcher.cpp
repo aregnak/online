@@ -90,6 +90,9 @@ inline void shutdownLimitReached(const std::shared_ptr<ProtocolHandlerInterface>
     oss << "error: cmd=socket kind=hardlimitreached params=" << COOLWSD::MaxDocuments << ","
         << COOLWSD::MaxConnections;
     const std::string error = oss.str();
+    const std::string error1 = Poco::format(PAYLOAD_UNAVAILABLE_LIMIT_REACHED,
+                                            COOLWSD::MaxDocuments, COOLWSD::MaxConnections);
+    assert(error == error1);
     LOG_INF("Sending client 'hardlimitreached' message: " << error);
 
     try
@@ -185,6 +188,10 @@ findOrCreateDocBroker(DocumentBroker::ChildType type, const std::string& uri,
                 std::ostringstream oss;
                 oss << "error: cmd=socket kind=hardlimitreached params=" << COOLWSD::MaxDocuments
                     << "," << COOLWSD::MaxConnections;
+                const std::string error1 =
+                    Poco::format(PAYLOAD_UNAVAILABLE_LIMIT_REACHED, COOLWSD::MaxDocuments,
+                                 COOLWSD::MaxConnections);
+                assert(oss.str() == error1);
                 return std::make_pair(nullptr, oss.str());
             }
         }

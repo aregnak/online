@@ -1282,6 +1282,7 @@ void TileCacheTests::checkTiles(std::shared_ptr<http::WebSocketSession>& socket,
             // change part
             std::ostringstream oss;
             oss << "setclientpart part=" << it;
+            assert(oss.str() == Poco::format("setclientpart part=%d", it));
             sendTextFrame(socket, oss.str(), testname);
             // Wait for the change to take effect otherwise we get invalidatetile
             // which removes our next tile request subscription (expecting us to
@@ -1350,6 +1351,11 @@ void TileCacheTests::requestTiles(std::shared_ptr<http::WebSocketSession>& socke
                 << " height=" << pixTileSize << " tileposx=" << tileX << " tileposy=" << tileY
                 << " tilewidth=" << tileWidth << " tileheight=" << tileHeight;
             text = oss.str();
+            assert(text ==
+                   Poco::format("tile nviewid=0 part=%d width=%d height=%d tileposx=%d tileposy=%d "
+                                "tilewidth=%d tileheight=%d",
+                                part, pixTileSize, pixTileSize, tileX, tileY, tileWidth,
+                                tileHeight));
 
             sendTextFrame(socket, text, testname);
             tile = assertResponseString(socket, "tile:", testname);
